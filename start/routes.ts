@@ -24,6 +24,9 @@ Route.get('/', async () => {
   return { hello: 'world' }
 })
 
+Route.post('login', 'AuthenticationController.login')
+Route.post('register', 'AuthenticationController.register')
+
 Route.get('/impulze', 'ImpulzesController.index')
 Route.get('/impulze/:id', 'ImpulzesController.show')
 Route.post('/impulze/', 'ImpulzesController.store')
