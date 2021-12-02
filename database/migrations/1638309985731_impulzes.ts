@@ -18,7 +18,7 @@ export default class Impulzes extends BaseSchema {
     })
   }
 
-  public async down () {
+  public async down() {
     this.schema.dropTable(this.tableName)
   }
 }
