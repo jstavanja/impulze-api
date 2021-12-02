@@ -1,5 +1,6 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column } from '@ioc:Adonis/Lucid/Orm'
+import { BaseModel, BelongsTo, belongsTo, column } from '@ioc:Adonis/Lucid/Orm'
+import User from './User'
 
 export default class Impulze extends BaseModel {
   @column({ isPrimary: true })
@@ -19,4 +20,10 @@ export default class Impulze extends BaseModel {
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   public updatedAt: DateTime
+
+  @column()
+  public userId: number
+
+  @belongsTo(() => User)
+  public user: BelongsTo<typeof User>
 }

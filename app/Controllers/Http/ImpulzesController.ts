@@ -1,13 +1,22 @@
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import { schema } from '@ioc:Adonis/Core/Validator'
-import Impulze from 'App/Models/Impulze'
+import User from 'App/Models/User'
 
 export default class ImpulzesController {
-  public async index({}: HttpContextContract) {
-    return Impulze.all()
+  public async index({ auth }: HttpContextContract) {
+    await auth.use('api').authenticate()
+
+    const user = await User.find(auth.user?.id)
+    await user?.load('impulzes')
+
+    return user?.impulzes
   }
 
-  public async store({ request, response }: HttpContextContract) {
+  public async store({ request, response, auth }: HttpContextContract) {
+    await auth.use('api').authenticate()
+
+    const user = await User.find(auth.user?.id)
+
     const newImpulzeSchema = schema.create({
       name: schema.string({ trim: true }),
       description: schema.string.optional(),
@@ -25,17 +34,27 @@ export default class ImpulzesController {
     }
 
     try {
-      const impulze = await Impulze.create(payload)
+      const impulze = await user?.related('impulzes').create(payload)
 
       return response.created(impulze)
     } catch (error) {
+      console.log(error)
       return response.internalServerError(error.messages)
     }
   }
 
-  public async show({ request, response }: HttpContextContract) {
+  public async show({ request, response, auth }: HttpContextContract) {
+    await auth.use('api').authenticate()
+
+    const user = await User.find(auth.user?.id)
+    await user?.load('impulzes')
+
     try {
-      const impulze = await Impulze.findBy('id', request.param('id'))
+      const impulze = await user
+        ?.related('impulzes')
+        .query()
+        .where('id', request.param('id'))
+        .first()
 
       if (impulze) {
         return response.ok(impulze)
@@ -47,7 +66,12 @@ export default class ImpulzesController {
     }
   }
 
-  public async update({ request, response }: HttpContextContract) {
+  public async update({ request, response, auth }: HttpContextContract) {
+    await auth.use('api').authenticate()
+
+    const user = await User.find(auth.user?.id)
+    await user?.load('impulzes')
+
     const updateImpulzeSchema = schema.create({
       name: schema.string.optional({ trim: true }),
       description: schema.string.optional(),
@@ -55,7 +79,6 @@ export default class ImpulzesController {
     })
 
     let payload
-
     try {
       payload = await request.validate({
         schema: updateImpulzeSchema,
@@ -65,27 +88,45 @@ export default class ImpulzesController {
     }
 
     try {
-      const impulze = await Impulze.create(payload)
+      const impulze = await user
+        ?.related('impulzes')
+        .query()
+        .where('id', request.param('id'))
+        .firstOrFail()
 
-      return response.created(impulze)
+      try {
+        await impulze?.merge(payload).save()
+
+        return response.created(impulze)
+      } catch (error) {
+        return response.internalServerError(error.messages)
+      }
     } catch (error) {
-      return response.internalServerError(error.messages)
+      return response.notFound()
     }
   }
 
-  public async destroy({ request, response }: HttpContextContract) {
-    let impulze
-    try {
-      impulze = await Impulze.findOrFail(request.param('id'))
-    } catch (error) {
-      return response.notFound(error.messages)
-    }
+  public async destroy({ request, response, auth }: HttpContextContract) {
+    await auth.use('api').authenticate()
+
+    const user = await User.find(auth.user?.id)
+    await user?.load('impulzes')
 
     try {
-      await impulze.delete()
-      return response.noContent()
+      const impulze = await user
+        ?.related('impulzes')
+        .query()
+        .where('id', request.param('id'))
+        .firstOrFail()
+
+      try {
+        await impulze?.delete()
+        return response.noContent()
+      } catch (error) {
+        return response.internalServerError(error.messages)
+      }
     } catch (error) {
-      return response.internalServerError(error.messages)
+      return response.notFound(error.messages)
     }
   }
 }
