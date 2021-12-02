@@ -70,3 +70,32 @@ declare module '@ioc:Adonis/Addons/Auth' {
     }
   }
 }
+
+export interface RegisterSuccessResponse {
+  id: number
+  email: string
+  created_at: string
+  updated_at: string
+}
+
+interface ValidationError {
+  rule: string
+  field: string
+  message: string
+}
+
+export interface RegisterErrorResponse {
+  errors: ValidationError[]
+}
+export interface LoginSuccessResponse {
+  type: string
+  token: string
+}
+
+export interface LoginError {
+  message: string
+}
+
+export interface LoginErrorResponse {
+  errors: LoginError[] | ValidationError[]
+}

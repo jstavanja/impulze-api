@@ -1,17 +1,36 @@
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import { schema, rules } from '@ioc:Adonis/Core/Validator'
 import User from 'App/Models/User'
+import { LoginErrorResponse } from 'Contracts/auth'
 
 export default class AuthenticationController {
   public async login({ auth, request, response }: HttpContextContract) {
-    const email = request.input('email')
-    const password = request.input('password')
+    const logUserInSchema = schema.create({
+      email: schema.string({}, [rules.email()]),
+      password: schema.string(),
+    })
+
+    let payload
+    try {
+      payload = await request.validate({
+        schema: logUserInSchema,
+      })
+    } catch (error) {
+      return response.unprocessableEntity(error.messages)
+    }
 
     try {
-      const token = await auth.use('api').attempt(email, password)
+      const token = await auth.use('api').attempt(payload.email, payload.password)
       return token
     } catch {
-      return response.unauthorized('Invalid credentials')
+      const errors: LoginErrorResponse = {
+        errors: [
+          {
+            message: 'Invalid credentials',
+          },
+        ],
+      }
+      return response.unauthorized(errors)
     }
   }
 
