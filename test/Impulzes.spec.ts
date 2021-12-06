@@ -1,32 +1,37 @@
 import test from 'japa'
 import supertest from 'supertest'
 import User from 'App/Models/User'
-import { LoginSuccessResponse } from 'Contracts/auth';
+import { LoginSuccessResponse } from 'Contracts/auth'
 
 const BASE_URL = `http://${process.env.HOST}:${process.env.PORT}`
 
 const userData = {
   email: 'test@test.com',
   password: 'test123',
-};
+}
 
 const mockImpulzes = [
-  { name: "test", description: "just a testing impulze", period: 1000 },
-  { name: "another test", description: "just another testing impulze", period: 5000 }
+  { name: 'test', description: 'just a testing impulze', period: 1000 },
+  { name: 'another test', description: 'just another testing impulze', period: 5000 },
 ]
 
-let token: string;
+let token: string
 
 test.group('Impulze controller', (group) => {
   group.beforeEach(async () => {
-    await User.create(userData);
-    const { body } : { body: LoginSuccessResponse } = await supertest(BASE_URL)
-      .post("/login")
+    await User.create(userData)
+    const { body }: { body: LoginSuccessResponse } = await supertest(BASE_URL)
+      .post('/login')
       .send(userData)
-    token = body.token;
+    token = body.token
   })
 
-  test('lists all the user\'s impulzes', async (assert) => {
+  group.afterEach(async () => {
+    const user = await User.findBy('email', userData.email)
+    user?.delete()
+  })
+
+  test("lists all the user's impulzes", async (assert) => {
     const user = await User.findBy('email', userData.email)
     await user?.related('impulzes').createMany(mockImpulzes)
 
@@ -39,9 +44,7 @@ test.group('Impulze controller', (group) => {
   })
 
   test('throws an unauthorized code when user isnt logged in', async (assert) => {
-    const { body } = await supertest(BASE_URL)
-      .get('/impulze')
-      .expect(401)
+    const { body } = await supertest(BASE_URL).get('/impulze').expect(401)
 
     assert.notStrictEqual(body, mockImpulzes)
   })
