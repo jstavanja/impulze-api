@@ -151,4 +151,4 @@ test.group('Authentication', () => {
       message: 'required validation failed'
     })
   })
-}
+})
