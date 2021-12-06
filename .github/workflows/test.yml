@@ -1,0 +1,35 @@
+name: Lint and Test
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Use Node.js 14
+        uses: actions/setup-node@v1
+        with:
+          node-version: '14'
+      - name: Create Database
+        run: |
+          mkdir -p tmp
+          touch tmp/dbtest.sqlite3
+      - name: Install packages and test
+        run: |
+          npm install
+          npm run lint
+          npm run test
+        env:
+          CI: true
+          PORT: 4000
+          HOST: 0.0.0.0
+          APP_KEY: 8hNuu2PMO-BE0g6DxwlBJ4FhVfzMPENN
+          DRIVE_DISK: local
+          DB_CONNECTION: sqlite
+          NODE_ENV: testing
+          DB_DATABASE: dbtest
