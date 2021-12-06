@@ -156,4 +156,30 @@ test.group('Authentication', () => {
       message: 'required validation failed',
     })
   })
+
+  test('info method returns user info in correct shape if user is logged in', async (assert) => {
+    const userData = {
+      email: 'differenttestinguser@test.com',
+      password: 'test123',
+    }
+    const user = await User.create(userData)
+
+    const { body: loginBody }: { body: LoginSuccessResponse } = await supertest(BASE_URL)
+      .post('/login')
+      .send(userData)
+
+    const { body } = await supertest(BASE_URL)
+      .post('/info')
+      .set('Authorization', `Bearer ${loginBody.token}`)
+      .expect(200)
+
+    assert.deepEqual(body, {
+      id: user.id,
+      email: user.email,
+    })
+  })
+
+  test('info method returns unauthorized exception if user is not logged in', async (assert) => {
+    await supertest(BASE_URL).post('/info').expect(401)
+  })
 })
