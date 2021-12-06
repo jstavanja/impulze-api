@@ -56,4 +56,15 @@ export default class AuthenticationController {
       return response.internalServerError(error.messages)
     }
   }
+
+  public async info({ response, auth }: HttpContextContract) {
+    await auth.use('api').authenticate()
+
+    const user = auth.user
+
+    return response.ok({
+      id: user?.id,
+      email: user?.email,
+    })
+  }
 }
