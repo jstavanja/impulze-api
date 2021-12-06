@@ -1,7 +1,12 @@
 import test from 'japa'
 import supertest from 'supertest'
 import User from 'App/Models/User'
-import { LoginErrorResponse, LoginSuccessResponse, RegisterErrorResponse, RegisterSuccessResponse } from 'Contracts/auth'
+import {
+  LoginErrorResponse,
+  LoginSuccessResponse,
+  RegisterErrorResponse,
+  RegisterSuccessResponse,
+} from 'Contracts/auth'
 
 const BASE_URL = `http://${process.env.HOST}:${process.env.PORT}`
 
@@ -30,11 +35,11 @@ test.group('Authentication', () => {
       })
       .expect(422)
 
-      assert.deepEqual(body.errors[0], {
-        rule: 'required',
-        field: 'password',
-        message: 'required validation failed'
-      })
+    assert.deepEqual(body.errors[0], {
+      rule: 'required',
+      field: 'password',
+      message: 'required validation failed',
+    })
   })
 
   test('register method returns unprocessable entity if email is missing with the correct error', async (assert) => {
@@ -45,11 +50,11 @@ test.group('Authentication', () => {
       })
       .expect(422)
 
-      assert.deepEqual(body.errors[0], {
-        rule: 'required',
-        field: 'email',
-        message: 'required validation failed'
-      })
+    assert.deepEqual(body.errors[0], {
+      rule: 'required',
+      field: 'email',
+      message: 'required validation failed',
+    })
   })
 
   test('register method returns unprocessable entity if email is malformed with the correct error', async (assert) => {
@@ -61,11 +66,11 @@ test.group('Authentication', () => {
       })
       .expect(422)
 
-      assert.deepEqual(body.errors[0], {
-        rule: 'email',
-        field: 'email',
-        message: 'email validation failed'
-      })
+    assert.deepEqual(body.errors[0], {
+      rule: 'email',
+      field: 'email',
+      message: 'email validation failed',
+    })
   })
 
   test('login method returns token when user enters correct credentials', async (assert) => {
@@ -113,13 +118,13 @@ test.group('Authentication', () => {
     assert.deepEqual(body.errors[0], {
       rule: 'required',
       field: 'email',
-      message: 'required validation failed'
+      message: 'required validation failed',
     })
   })
 
   test('login method returns unprocessable entity if email is malformed', async (assert) => {
     const user = {
-      email: "test123",
+      email: 'test123',
       password: 'test123',
     }
 
@@ -131,13 +136,13 @@ test.group('Authentication', () => {
     assert.deepEqual(body.errors[0], {
       rule: 'email',
       field: 'email',
-      message: 'email validation failed'
+      message: 'email validation failed',
     })
   })
 
   test('login method returns unprocessable entity if password is missing', async (assert) => {
     const user = {
-      email: 'test@test.com'
+      email: 'test@test.com',
     }
 
     const { body }: { body: LoginErrorResponse } = await supertest(BASE_URL)
@@ -148,7 +153,7 @@ test.group('Authentication', () => {
     assert.deepEqual(body.errors[0], {
       rule: 'required',
       field: 'password',
-      message: 'required validation failed'
+      message: 'required validation failed',
     })
   })
 })
