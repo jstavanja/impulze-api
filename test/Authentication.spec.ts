@@ -169,7 +169,7 @@ test.group('Authentication', () => {
       .send(userData)
 
     const { body } = await supertest(BASE_URL)
-      .post('/info')
+      .get('/info')
       .set('Authorization', `Bearer ${loginBody.token}`)
       .expect(200)
 
@@ -180,6 +180,6 @@ test.group('Authentication', () => {
   })
 
   test('info method returns unauthorized exception if user is not logged in', async (assert) => {
-    await supertest(BASE_URL).post('/info').expect(401)
+    await supertest(BASE_URL).get('/info').expect(401)
   })
 })
