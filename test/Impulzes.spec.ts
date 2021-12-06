@@ -62,5 +62,86 @@ test.group('Impulze controller', (group) => {
     assert.notStrictEqual(mockImpulzes[0], impulze)
   })
 
-  // TODO: add validation tests and all the tests for all methods
-}
+  test('throws missing field error when impulze name is missing and does not create impulze', async (assert) => {
+    const mockImpulzeWithMissingField = {
+      description: mockImpulzes[0].description,
+      period: mockImpulzes[0].period,
+    }
+
+    const { body } = await supertest(BASE_URL)
+      .post('/impulze')
+      .set('Authorization', `Bearer ${token}`)
+      .send(mockImpulzeWithMissingField)
+      .expect(422)
+
+    const user = await User.findBy('email', userData.email)
+    const impulzes = await user?.related('impulzes').query()
+
+    assert.equal(impulzes?.length, 0)
+    assert.deepEqual(body.errors[0], {
+      rule: 'required',
+      field: 'name',
+      message: 'required validation failed',
+    })
+  })
+
+  test('throws missing field error when impulze period is missing and does not create impulze', async (assert) => {
+    const mockImpulzeWithMissingField = {
+      name: mockImpulzes[0].name,
+      description: mockImpulzes[0].description,
+    }
+
+    const { body } = await supertest(BASE_URL)
+      .post('/impulze')
+      .set('Authorization', `Bearer ${token}`)
+      .send(mockImpulzeWithMissingField)
+      .expect(422)
+
+    const user = await User.findBy('email', userData.email)
+    const impulzes = await user?.related('impulzes').query()
+
+    assert.equal(impulzes?.length, 0)
+    assert.deepEqual(body.errors[0], {
+      rule: 'required',
+      field: 'period',
+      message: 'required validation failed',
+    })
+  })
+
+  test('updates an impulze on the user', async (assert) => {
+    const user = await User.findByOrFail('email', userData.email)
+    const originalImpulze = await user.related('impulzes').create(mockImpulzes[0])
+
+    await supertest(BASE_URL)
+      .patch(`/impulze/${originalImpulze.id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send(mockImpulzes[1])
+      .expect(201)
+
+    const changedImpulze = await user
+      ?.related('impulzes')
+      .query()
+      .where('id', originalImpulze.id)
+      .first()
+
+    assert.notStrictEqual(mockImpulzes[1], changedImpulze)
+  })
+
+  test('deletes an impulze from the user', async (assert) => {
+    const user = await User.findByOrFail('email', userData.email)
+    const originalImpulze = await user.related('impulzes').create(mockImpulzes[0])
+
+    await supertest(BASE_URL)
+      .delete(`/impulze/${originalImpulze.id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(204)
+
+    const deletedImpulze = await user
+      ?.related('impulzes')
+      .query()
+      .where('id', originalImpulze.id)
+      .first()
+
+    assert.isNull(deletedImpulze)
+  })
+})
