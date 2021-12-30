@@ -44,7 +44,7 @@ const corsConfig: CorsConfig = {
   |                     one of the above values.
   |
   */
-  origin: ['impulze.netlify.app'],
+  origin: ['https://impulze.netlify.app'],
 
   /*
   |--------------------------------------------------------------------------
