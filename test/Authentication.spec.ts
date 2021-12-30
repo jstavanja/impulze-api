@@ -179,7 +179,7 @@ test.group('Authentication', () => {
     })
   })
 
-  test('info method returns unauthorized exception if user is not logged in', async (assert) => {
+  test('info method returns unauthorized exception if user is not logged in', async () => {
     await supertest(BASE_URL).get('/info').expect(401)
   })
 })
